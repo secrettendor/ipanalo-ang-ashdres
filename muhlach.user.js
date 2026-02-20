@@ -1,5 +1,6 @@
 // ==UserScript==
 // @name lPANALO ANG ASHDRES
+// @match https://ipanalo-ang-ashdres.vercel.app/*
 // @match https://vote-kappa-seven.vercel.app/*
 // @grant none
 // ==/UserScript==
