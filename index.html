@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VOTE FOR ASHDRES</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial;
+  background:url('https://backend.choicely.com/images/Y2hvaWNlbHktZXUvaW1hZ2VzL0RIODNNZW9tdk1sSVNrdlR0Z25a/serve/') no-repeat center center fixed;
+  background-size:cover;
+  color:#fff;
+}
+
+h3{text-align:center;margin:10px 0;font-weight:bold;color:#fff}
+input,button{font-family:inherit}
+
+#login{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:10000;
+}
+
+#login .box{
+  background:rgba(255,255,255,0.95);
+  padding:20px;
+  border-radius:14px;
+  width:90%;
+  max-width:320px;
+  text-align:center;
+  color:#000;
+}
+
+#login input{
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+#login button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#000;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#content{display:none}
+
+/* ✅ ONE COLUMN */
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+  padding:10px;
+}
+
+iframe{
+  width:100%;
+  height:430px; /* mas compatible sa iOS */
+  border-radius:14px;
+  border:1px solid #e0caa5;
+  background:#fff;
+}
+
+.button{
+  display:inline-block;
+  margin:10px;
+  padding:12px 20px;
+  background:#222;
+  color:#fff;
+  border-radius:10px;
+  text-decoration:none;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.status{font-weight:bold;margin-top:10px}
+
+#wm{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:99998;
+  font-size:13px;
+  opacity:.18;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  grid-template-rows:repeat(6,1fr);
+  transform:rotate(-15deg);
+}
+
+#wm div{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  user-select:none;
+}
+
+#shield{
+  position:fixed;
+  inset:0;
+  background:#000;
+  opacity:0;
+  pointer-events:none;
+  transition:.15s;
+  z-index:99999;
+}
+</style>
+</head>
+
+<body>
+
+<div id="login">
+  <div class="box">
+    <h3>Login Required</h3>
+    <input id="name" placeholder="Your name">
+    <button onclick="enter()">ENTER</button>
+  </div>
+</div>
+
+<h3>VOTE FOR ASHDRES</h3>
+<p class="status" id="tm">Checking Tampermonkey…</p>
+<a href="./muhlach.user.js" class="button">INSTALL USERSCRIPT</a>
+<button class="button" onclick="changeName()">CHANGE NAME</button>
+
+<!-- ✅ 5 IFRAMES -->
+<div class="grid" id="content">
+  <iframe src="https://vote-kappa-seven.vercel.app/" loading="lazy"></iframe>
+  <iframe src="https://vote-kappa-seven.vercel.app/" loading="lazy"></iframe>
+  <iframe src="https://vote-kappa-seven.vercel.app/" loading="lazy"></iframe>
+  <iframe src="https://vote-kappa-seven.vercel.app/" loading="lazy"></iframe>
+  <iframe src="https://vote-kappa-seven.vercel.app/" loading="lazy"></iframe>
+</div>
+
+<div id="wm"></div>
+<div id="shield"></div>
+
+<script>
+function enter(){
+  const n=document.getElementById("name").value.trim();
+  if(!n) return alert("Name required");
+  localStorage.setItem("loggedIn","1");
+  localStorage.setItem("loggedName",n);
+  showContent(n);
+}
+
+function changeName(){
+  localStorage.removeItem("loggedIn");
+  localStorage.removeItem("loggedName");
+  document.getElementById("login").style.display="flex";
+  document.getElementById("content").style.display="none";
+}
+
+function showContent(n){
+  const k="visit_"+n.toLowerCase().replace(/\s+/g,"_");
+  let v=JSON.parse(localStorage.getItem(k)||"{}");
+  const now=new Date().toLocaleString();
+  v.name=n;
+  v.visits=(v.visits||0)+1;
+  v.first=v.first||now;
+  v.last=now;
+  localStorage.setItem(k,JSON.stringify(v));
+
+  document.getElementById("login").style.display="none";
+  document.getElementById("content").style.display="grid";
+
+  const wm=document.getElementById("wm");
+  wm.innerHTML="";
+  const stamp=`ASHDRES • ${n} • ${now} • visits:${v.visits}`;
+
+  for(let i=0;i<24;i++){
+    let d=document.createElement("div");
+    d.textContent=stamp;
+    wm.appendChild(d);
+  }
+
+  setInterval(()=>{
+    wm.style.transform=`rotate(${Math.random()*10-5}deg)`
+  },3000);
+}
+
+const loggedIn=localStorage.getItem("loggedIn");
+const savedName=localStorage.getItem("loggedName");
+if(loggedIn==="1"&&savedName){
+  showContent(savedName);
+}
+
+const tm=document.getElementById("tm");
+typeof window.GM_info!=="undefined"
+? (tm.textContent="✅ Tampermonkey detected",tm.style.color="green")
+: (tm.textContent="⚠ Tampermonkey not detected",tm.style.color="red");
+
+(()=>{
+  const s=document.getElementById("shield"),
+        b=v=>s.style.opacity=v?"1":"0";
+
+  document.addEventListener("visibilitychange",()=>b(document.hidden));
+  window.addEventListener("blur",()=>b(1));
+  window.addEventListener("focus",()=>b(0));
+
+  document.addEventListener("contextmenu",e=>e.preventDefault());
+
+  document.addEventListener("keydown",e=>{
+    if(e.key==="F12"||e.ctrlKey&&e.shiftKey&&e.key==="I"){
+      e.preventDefault();
+      b(1);
+    }
+  });
+
+  setInterval(()=>{
+    b(outerWidth-innerWidth>160||outerHeight-innerHeight>160)
+  },500);
+})();
+</script>
+
+</body>
+</html>
