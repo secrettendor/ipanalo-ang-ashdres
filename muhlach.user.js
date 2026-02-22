@@ -1,99 +1,8 @@
 // ==UserScript==
 // @name lPANALO ANG ASHDRES
-// @match https://ipanalo-ang-ashdres.vercel.app/*
-// @match https://vote-kappa-seven.vercel.app/*
-// @grant none
 // ==/UserScript==
 (() =>{
 const w=window,d=document;
-
-// --- 1. LOG BOX ---
-const logBox=d.createElement("div");
-Object.assign(logBox.style,{
-  position:"fixed",
-  bottom:"20px",
-  right:"20px",
-  width:"240px",
-  height:"140px",
-  background:"rgba(0,0,0,0.85)",
-  color:"#fff",
-  fontSize:"12px",
-  padding:"10px",
-  zIndex:"9999",
-  overflowY:"auto",
-  borderRadius:"8px",
-  boxShadow:"0 0 10px #000",
-  textAlign:"center",
-  fontWeight:"bold"
-});
-d.body.appendChild(logBox);
-
-const log=(m,c="#fff")=>{
-  const l=d.createElement("div");
-  l.innerText=m;
-  l.style.color=c;
-  l.style.fontSize="14px"; // mas malaking font
-  logBox.appendChild(l);
-  logBox.scrollTop=logBox.scrollHeight;
-}
-
-// --- 2. HELPERS ---
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const rw=(m=100,M=300)=>Math.floor(Math.random()*(M-m+1))+m;
-
-function keepAlive(){
-  console.log("Running at",new Date().toLocaleTimeString());
-  setTimeout(keepAlive,3000);
-}
-function fakeActivity(){
-  w.dispatchEvent(new MouseEvent("mousemove",{bubbles:true}));
-  w.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"Shift"}));
-}
-setInterval(fakeActivity,1000);
-
-async function qAll(sel,t=5000,i=100){
-  const start=Date.now();
-  while(true){
-    const el=d.querySelectorAll(sel);
-    if(el.length>0) return el;
-    if(Date.now()-start>t) return null;
-    await wait(i);
-  }
-}
-
-// --- 3. MASTER SEQUENCES ---
-const sequences=[
-  {
-    name:"LOTY",
-    category:"LOVETEAM OF THE YEAR",
-    participant:"AshDres",
-    buttonIndex:3,
-    backend:[
-      "https://backend.choicely.com/images/Y2hvaWNlbHktZXUvaW1hZ2VzL1d4RWdMZEdVVGs1VFZ2MGxycEhK/serve/",
-      "https://backend.choicely.com/images/Y2hvaWNlbHktZXUvaW1hZ2VzL3A4UWVFTGl2am5ZY1VXSmZwZGNl/serve/"
-    ]
-  },
-  {
-    name:"FOTY",
-    category:"Fandom Of The Year",
-    participant:"AshDres",
-    buttonIndex:2,
-    backend:[
-      "https://backend.choicely.com/images/Y2hvaWNlbHktZXUvaW1hZ2VzL1d4RWdMZEdVVGs1VFZ2MGxycEhK/serve/",
-      "https://backend.choicely.com/images/Y2hvaWNlbHktZXUvaW1hZ2VzL3A4UWVFTGl2am5ZY1VXSmZwZGNl/serve/"
-    ]
-  },
-  {
-    name:"MVOTY",
-    category:"Music Video Of The Year",
-    participant:"Minamahal — Andres Muhlach & Ashtine Olviga",
-    buttonIndex:4, // ✅ Fixed
-    backend:[
-      "https://backend.choicely.com/images/Y2hvaWNlbHktZXUvaW1hZ2VzL1d4RWdMZEdVVGs1VFZ2MGxycEhK/serve/",
-      "https://backend.choicely.com/images/Y2hvaWNlbHktZXUvaW1hZ2VzL2ZjN2NpckFKeG9YOFg0SmJwZVhE/serve/"
-    ]
-  }
-];
 
 // --- STATE MANAGEMENT ---
 let currentSeqIndex = parseInt(localStorage.getItem("vp_seq_index") || "0");
@@ -102,7 +11,7 @@ let currentSeq = sequences[currentSeqIndex];
 
 log(`🚀 Simula: ${currentSeq.name} (Hakbang ${currentSeqIndex+1}/${sequences.length})`, "cyan");
 
-// --- 4. FETCH HOOK ---
+// ---  FETCH HOOK ---
 const oFetch=w.fetch;
 w.fetch=async(...a)=>{
   const r=await oFetch.apply(w,a);
@@ -139,7 +48,7 @@ w.fetch=async(...a)=>{
   return r;
 };
 
-// --- 5. MAIN RUNNER ---
+// --- MAIN RUNNER ---
 async function runSequence(){
   // 1. Click Backend (No log for cleanliness)
   for(const url of currentSeq.backend){
@@ -148,7 +57,7 @@ async function runSequence(){
     await wait(rw());
   }
 
-  // 2. Find Category
+  // Find Category
   const categories = await qAll("h6");
   const categoryElem = Array.from(categories).find(e => e.textContent.trim() === currentSeq.category);
 
@@ -173,7 +82,7 @@ async function runSequence(){
 
   await wait(500);
 
-  // 3. Find Participant & Vote
+  // Find Participant & Vote
   const titles = await qAll("h6");
   const targetElem = Array.from(titles).find(e => e.textContent.trim() === currentSeq.participant);
 
